@@ -4,20 +4,24 @@ This document tracks the progress of the Unbiased India News agentic pipeline.
 
 ---
 
-## 🔴 High Priority (Final Steps)
+## 🔴 High Priority (Immediate Actions)
 
-- [ ] **Activate LLM Logic:** Uncomment the `llm.ainvoke()` calls in `src/agents/nodes/summarizer.py` and `src/agents/nodes/auditor.py`. Currently, these nodes use simulated logic to prevent unintended API costs.
-- [ ] **Real-World Parsing Validation:** Once LLM logic is active, verify that the `RobustJSONParser` correctly handles various edge cases in Gemini's responses.
+- [x] **Activate LLM Logic:** (Completed) Uncommented `llm.ainvoke()` calls and enabled live AI reasoning.
+- [ ] **Real-World Parsing Validation:** Verify that the `RobustJSONParser` correctly handles various edge cases in Gemini's responses once active.
 
-## 🟡 Medium Priority (Expansion)
+## 🟡 Medium Priority (Expansion & Eval)
 
-- [ ] **Regional Source Deep-Dive:** Expand the `sitemap_urls` in `IngestionCoordinator` to include regional language sitemaps (Hindi, Marathi, etc.) for deeper cross-lingual coverage.
-- [ ] **Judge LLM (GPT-4o) Integration:** Automate the evaluation suite in `tests/evals/runner.py` by integrating a "Judge" call to compare the Auditor's score against human baselines.
+- [ ] **Regional Source Expansion:** Add more regional language sitemaps (Hindi, Marathi, Tamil) to `IngestionCoordinator`.
+- [ ] **Judge LLM (GPT-4o) Integration:** Automate `tests/evals/runner.py` by integrating a "Judge" LLM to evaluate Auditor accuracy.
 
-## 🟢 Low Priority (UX & Polishing)
+## 🔵 Good to Have (Future Enhancements)
 
-- [ ] **Frontend Dashboard:** Create a simple Streamlit or Next.js dashboard to visualize the clusters, bias trends, and "Blindspot" alerts stored in the SQLite database.
-- [ ] **Email/Telegram Alerts:** Add a utility to send the daily `LATEST_REPORT.md` to a Telegram bot or email list.
+- [ ] **Vector Database (Story Tracking):** Integrate ChromaDB or Qdrant to track the evolution of a story over time.
+- [ ] **Dockerization:** Create `Dockerfile` and `docker-compose.yml` for unified environment deployment.
+- [ ] **REST API Layer:** Implement a FastAPI server to serve daily reports and cluster data to frontends.
+- [ ] **LLM Response Caching:** Implement LangChain's `SQLiteCache` to save API costs on repeated runs.
+- [ ] **Automated Data Pruning:** Add a task to archive or delete raw articles/logs older than 30 days.
+- [ ] **Frontend Dashboard:** A Streamlit or Next.js UI to visualize the "Unbiased India" findings.
 
 ---
 
@@ -25,25 +29,26 @@ This document tracks the progress of the Unbiased India News agentic pipeline.
 
 ### Ingestion & Data Quality
 
-- [x] **Triple-Track Ingestion:** Concurrent fetching via RSS, Sitemap XML, and Homepage HTML Spiders.
-- [x] **Asynchronous Fetching:** Fully parallelized I/O using `aiohttp` and `asyncio.gather`.
-- [x] **Full Text Extraction:** Integrated `trafilatura` for clutter-free article body extraction.
-- [x] **Content Sanitization:** Automated filtering of cookie walls, error pages, and "junk" text.
-- [x] **Pre-Clustering Deduping:** URL and Title-based deduplication to reduce noise and cost.
+- [x] **Triple-Track Discovery:** Parallel fetching via RSS, Sitemaps, and Homepage Spiders.
+- [x] **Asynchronous I/O:** Fully parallelized fetching and extraction using `aiohttp` and `asyncio.gather`.
+- [x] **Deep Extraction:** Integrated `trafilatura` for clean full-text article body fetching.
+- [x] **Content Sanitization:** Automated filtering of cookie walls, error pages, and junk content.
+- [x] **Pre-Clustering Deduping:** URL and Title-based deduplication to optimize cost and noise.
 
 ### Agentic Intelligence
 
-- [x] **Modular Node Architecture:** Decoupled agents (Scout, Summarizer, Auditor, Editor) into independent, testable classes.
-- [x] **Cross-lingual Clustering:** Multilingual-E5 embeddings for grouping stories across 7+ languages.
-- [x] **LangGraph Checkpointing:** State persistence using `SqliteSaver` to allow resuming after crashes.
-- [x] **LLM Rate Limiting:** Implemented `asyncio.Semaphore` to prevent 429 rate limit errors.
-- [x] **Robust JSON Parsing:** Regex-based extraction of AI responses from raw strings.
+- [x] **Service-Node Architecture:** Fully modularized agent logic into independent, testable classes.
+- [x] **Functional Patterns:** Replaced imperative loops with clean list comprehensions and mapping.
+- [x] **Cross-lingual Grouping:** Multilingual-E5 embeddings for semantic clustering across 7+ languages.
+- [x] **State Persistence:** LangGraph checkpointing using `SqliteSaver` for crash recovery.
+- [x] **Stability:** LLM Rate Limiting using `asyncio.Semaphore` (max 3 concurrent calls).
+- [x] **Robust Parsing:** Reliable regex-based JSON extraction from LLM responses.
 
-### Engineering & Storage
+### Engineering & Configuration
 
-- [x] **Externalized Data:** RSS feeds (`data/rss_feeds.json`) and Ownership KB (`data/source_kb.json`) managed outside of code.
-- [x] **Repository Pattern:** Decoupled database connection from data access logic using SQLAlchemy.
-- [x] **Reasoning Trace Storage:** Persistent storage of AI "Chain of Thought" for transparency.
-- [x] **Markdown Report Generator:** Automated export of daily findings to human-readable reports.
-- [x] **Unit Testing Suite:** `pytest` infrastructure for core helpers and ingestion logic.
-- [x] **GitHub Action:** Automated daily 8 AM IST runs with model caching.
+- [x] **YAML Configuration:** Centralized system settings and feed network in `config.yaml`.
+- [x] **Knowledge Base Persistence:** Managed publisher metadata in `data/source_kb.json`.
+- [x] **Repository Pattern:** Decoupled storage logic from core pipeline using SQLAlchemy.
+- [x] **Reporting Engine:** Automated generation of human-readable Markdown reports.
+- [x] **Testing Infrastructure:** `pytest` suite for core helpers and ingestion logic.
+- [x] **Automation:** GitHub Action for daily 8 AM IST runs with HuggingFace model caching.

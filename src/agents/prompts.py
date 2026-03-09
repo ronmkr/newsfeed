@@ -6,6 +6,11 @@ Focus on the factual events and avoid any subjective commentary.
 
 Articles:
 {article_content}
+
+Respond ONLY with a valid JSON object in the following format:
+{{
+    "summary": ["string", "string", "string"]
+}}
 """
 
 # Prompt template for the Auditor Node
