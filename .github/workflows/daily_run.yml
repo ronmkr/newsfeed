@@ -10,7 +10,7 @@ jobs:
   daily-run:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # To push the DB back
+      contents: write # To push results back
     
     steps:
       - name: Check out repository
@@ -19,14 +19,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
 
       - name: Cache HuggingFace Models
         uses: actions/cache@v4
         with:
           path: ~/.cache/huggingface
-          key: ${{ runner.os }}-hf-models-${{ hashFiles('src/config/settings.py') }}
+          key: ${{ runner.os }}-hf-models-${{ hashFiles('config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-hf-models-
 
@@ -37,15 +37,15 @@ jobs:
 
       - name: Run Unbiased India News Pipeline
         env:
-          # Use your Google Gemini API Key from GitHub Secrets
-          OPENAI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: python main.py
 
       - name: Commit and Push Results
-        # Keep the database persistent in the repo
+        # Keep the database and daily reports persistent in the repo
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add data/newsfeed.db logs/pipeline.log
+          git add data/newsfeed.db reports/ logs/
           git commit -m "Update daily report: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push

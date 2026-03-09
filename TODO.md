@@ -1,54 +1,45 @@
-# 📝 Unbiased India News - Development Roadmap
+# Unbiased India News - Development Roadmap
 
-This document tracks the progress of the Unbiased India News agentic pipeline.
-
----
-
-## 🔴 High Priority (Immediate Actions)
-
-- [x] **Activate LLM Logic:** (Completed) Uncommented `llm.ainvoke()` calls and enabled live AI reasoning.
-- [ ] **Real-World Parsing Validation:** Verify that the `RobustJSONParser` correctly handles various edge cases in Gemini's responses once active.
-
-## 🟡 Medium Priority (Expansion & Eval)
-
-- [ ] **Regional Source Expansion:** Add more regional language sitemaps (Hindi, Marathi, Tamil) to `IngestionCoordinator`.
-- [ ] **Judge LLM (GPT-4o) Integration:** Automate `tests/evals/runner.py` by integrating a "Judge" LLM to evaluate Auditor accuracy.
-
-## 🔵 Good to Have (Future Enhancements)
-
-- [ ] **Vector Database (Story Tracking):** Integrate ChromaDB or Qdrant to track the evolution of a story over time.
-- [ ] **Dockerization:** Create `Dockerfile` and `docker-compose.yml` for unified environment deployment.
-- [ ] **REST API Layer:** Implement a FastAPI server to serve daily reports and cluster data to frontends.
-- [ ] **LLM Response Caching:** Implement LangChain's `SQLiteCache` to save API costs on repeated runs.
-- [ ] **Automated Data Pruning:** Add a task to archive or delete raw articles/logs older than 30 days.
-- [ ] **Frontend Dashboard:** A Streamlit or Next.js UI to visualize the "Unbiased India" findings.
+This document tracks the engineering progress and future milestones for the Unbiased India News agentic pipeline.
 
 ---
 
-## ✅ Completed Foundations
+## High Priority (Final Validation)
 
-### Ingestion & Data Quality
+- [ ] Real-World Parsing Validation: Verify that the RobustJSONParser correctly handles high-token Gemini responses during major breaking news cycles (e.g., 20+ sources in a single cluster).
+- [ ] Cross-Lingual Clustering Verification: Empirically validate that Marathi articles from Sakal and Hindi articles from Navbharat Times correctly group with English reports from The Hindu using the Multilingual-E5 vector space.
 
-- [x] **Triple-Track Discovery:** Parallel fetching via RSS, Sitemaps, and Homepage Spiders.
-- [x] **Asynchronous I/O:** Fully parallelized fetching and extraction using `aiohttp` and `asyncio.gather`.
-- [x] **Deep Extraction:** Integrated `trafilatura` for clean full-text article body fetching.
-- [x] **Content Sanitization:** Automated filtering of cookie walls, error pages, and junk content.
-- [x] **Pre-Clustering Deduping:** URL and Title-based deduplication to optimize cost and noise.
+## Medium Priority (Expansion and Evaluation)
+
+- [ ] Regional Source Expansion: Implement additional sitemap discovery for regional powerhouses including Mathrubhumi (Malayalam) and Anandabazar Patrika (Bengali).
+- [ ] Judge LLM (GPT-4o) Integration: Automate the tests/evals/runner.py by integrating a GPT-4o "Judge" to provide an objective score comparison against the Auditor's bias findings.
+
+## Good to Have (Future Enhancements)
+
+- [ ] Vector Database Integration: Implement ChromaDB to enable long-term story tracking and narrative shift detection over time.
+- [ ] REST API Layer: Develop a FastAPI-based service to expose daily reports and cluster data to external web or mobile applications.
+- [ ] LLM Response Caching: Integrate LangChain SQLiteCache to minimize API costs during development and repeated batch runs.
+- [ ] Automated Data Retention: Implement a pruning utility to archive raw article data and logs older than 30 days to manage database growth.
+
+---
+
+## Completed Foundations
+
+### Ingestion and Data Quality
+- [x] Triple-Track Discovery: Concurrent fetching via RSS, Sitemap XML, and Homepage HTML Spiders.
+- [x] Asynchronous I/O: Fully parallelized fetching and extraction logic using aiohttp and asyncio.gather.
+- [x] Full Text Extraction: Integration of Trafilatura for clutter-free article body retrieval.
+- [x] Content Sanitization: Heuristic-based filtering of cookie walls, access denied pages, and junk text.
+- [x] Pre-Clustering Deduping: URL and Title-level filtering to optimize token usage and system noise.
 
 ### Agentic Intelligence
+- [x] Modular Node Architecture: Decoupled agent logic (Scout, Summarizer, Auditor, Editor) into independent, testable classes.
+- [x] State Persistence: Asynchronous LangGraph checkpointing using AsyncSqliteSaver for crash recovery.
+- [x] Rate Limiting: Implementation of asyncio.Semaphore to manage concurrent LLM API calls.
+- [x] Robust JSON Parsing: Regex-based extraction and validation of AI-generated responses.
 
-- [x] **Service-Node Architecture:** Fully modularized agent logic into independent, testable classes.
-- [x] **Functional Patterns:** Replaced imperative loops with clean list comprehensions and mapping.
-- [x] **Cross-lingual Grouping:** Multilingual-E5 embeddings for semantic clustering across 7+ languages.
-- [x] **State Persistence:** LangGraph checkpointing using `SqliteSaver` for crash recovery.
-- [x] **Stability:** LLM Rate Limiting using `asyncio.Semaphore` (max 3 concurrent calls).
-- [x] **Robust Parsing:** Reliable regex-based JSON extraction from LLM responses.
-
-### Engineering & Configuration
-
-- [x] **YAML Configuration:** Centralized system settings and feed network in `config.yaml`.
-- [x] **Knowledge Base Persistence:** Managed publisher metadata in `data/source_kb.json`.
-- [x] **Repository Pattern:** Decoupled storage logic from core pipeline using SQLAlchemy.
-- [x] **Reporting Engine:** Automated generation of human-readable Markdown reports.
-- [x] **Testing Infrastructure:** `pytest` suite for core helpers and ingestion logic.
-- [x] **Automation:** GitHub Action for daily 8 AM IST runs with HuggingFace model caching.
+### Engineering and Configuration
+- [x] Universal YAML Configuration: Centralized system settings and feed network in config.yaml.
+- [x] Repository Pattern: Decoupled database persistence from core pipeline logic using SQLAlchemy.
+- [x] Reporting Engine: Automated export of daily database findings to structured Markdown reports.
+- [x] Dockerization: Fully containerized setup with Python 3.12, persistent volumes, and dynamic configuration support.

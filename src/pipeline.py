@@ -1,6 +1,5 @@
 import os
-import sqlite3 # Required for checkpointer
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from src.ingestion.collector import IngestionCoordinator
 from src.agents.graph import create_pipeline
 from src.storage.connection import DatabaseConnection
@@ -15,68 +14,58 @@ class UnbiasedIndiaNewsPipeline:
     
     def __init__(self):
         self.ingestion = IngestionCoordinator()
-        
-        # 1. Initialize Checkpointer for LangGraph
-        checkpoint_dir = os.path.dirname(settings.CHECKPOINTS_PATH)
-        if checkpoint_dir: os.makedirs(checkpoint_dir, exist_ok=True)
-        
-        conn = sqlite3.connect(settings.CHECKPOINTS_PATH, check_same_thread=False)
-        self.checkpointer = SqliteSaver(conn)
-        
-        # 2. Initialize Agentic App with Checkpointer
-        self.agentic_app = create_pipeline(checkpointer=self.checkpointer)
-        
-        # 3. Initialize Database
         self.db_connection = DatabaseConnection()
         self.repository = ClusterRepository(self.db_connection)
         self.report_generator = MarkdownReportGenerator(self.db_connection)
 
     async def run_daily_batch(self):
-        """Executes the full daily run."""
+        """Executes the full daily run with async checkpointer."""
         
         # 1. Environment Check
-        if not settings.OPENAI_API_KEY:
-            logger.critical("MISSING API KEY: 'OPENAI_API_KEY' not found.")
+        if not settings.GOOGLE_API_KEY:
+            logger.critical("MISSING API KEY: 'GOOGLE_API_KEY' not found.")
             return
 
         logger.info(f"Starting {settings.PROJECT_NAME} Pipeline...")
 
-        # 2. Ingestion
-        feeds = load_feeds()
-        raw_articles = await self.ingestion.fetch_all(feeds)
-        if not raw_articles:
-            logger.error("No articles found during ingestion. Stopping.")
-            return
-
-        # Convert RawArticle models to dicts for the LangGraph state
-        raw_data = [art.to_dict() for art in raw_articles]
-
-        # 3. Agentic Workflow
-        # Added thread_id for LangGraph checkpointing
-        config = {"configurable": {"thread_id": "daily_run"}}
+        # 2. Initialize Async Checkpointer and Agentic App
+        checkpoint_dir = os.path.dirname(settings.CHECKPOINTS_PATH)
+        if checkpoint_dir: os.makedirs(checkpoint_dir, exist_ok=True)
         
-        initial_state = {
-            "clusters": [],
-            "current_cluster_index": 0,
-            "raw_data": raw_data,
-            "errors": [],
-            "next_step": "",
-            "loop_count": 0
-        }
-        
-        logger.info(f"Processing {len(raw_data)} articles through agents...")
-        final_state = await self.agentic_app.ainvoke(initial_state, config=config)
+        async with AsyncSqliteSaver.from_conn_string(settings.CHECKPOINTS_PATH) as checkpointer:
+            agentic_app = create_pipeline(checkpointer=checkpointer)
 
-        # 4. Storage
-        if final_state.get("clusters"):
-            self.repository.save_clusters(final_state["clusters"])
+            # 3. Ingestion
+            feeds = load_feeds()
+            raw_articles = await self.ingestion.fetch_all(feeds)
+            if not raw_articles:
+                logger.error("No articles found during ingestion. Stopping.")
+                return
+
+            # Convert RawArticle models to dicts for the LangGraph state
+            raw_data = [art.to_dict() for art in raw_articles]
+
+            # 4. Agentic Workflow
+            config = {"configurable": {"thread_id": "daily_run"}}
+            initial_state = {
+                "clusters": [],
+                "current_cluster_index": 0,
+                "raw_data": raw_data,
+                "errors": [],
+                "next_step": "",
+                "loop_count": 0
+            }
             
-            # 5. Generate human-readable report
-            self.report_generator.generate_daily_report()
-            
-            logger.success(f"Pipeline complete. {len(final_state['clusters'])} clusters saved.")
-        else:
-            logger.warning("No clusters generated to save.")
+            logger.info(f"Processing {len(raw_data)} articles through agents...")
+            final_state = await agentic_app.ainvoke(initial_state, config=config)
+
+            # 5. Storage
+            if final_state.get("clusters"):
+                self.repository.save_clusters(final_state["clusters"])
+                self.report_generator.generate_daily_report()
+                logger.success(f"Pipeline complete. {len(final_state['clusters'])} clusters saved.")
+            else:
+                logger.warning("No clusters generated to save.")
 
 if __name__ == "__main__":
     import asyncio

@@ -1,0 +1,14 @@
+services:
+  news-pipeline:
+    build: .
+    container_name: unbiased-india-news
+    # This allows passing the key via terminal or .env
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+      - CONFIG_PATH=${CONFIG_PATH:-config.yaml}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    restart: no

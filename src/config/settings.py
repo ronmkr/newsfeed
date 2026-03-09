@@ -2,15 +2,17 @@ import os
 import yaml
 from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from src.utils.logger import project_logger as logger
 
-def load_yaml_config(path: str = "config.yaml"):
-    """Loads configuration from YAML file."""
+def load_yaml_config():
+    """Loads configuration from YAML file path specified in ENV or default."""
+    path = os.getenv("CONFIG_PATH", "config.yaml")
     if not os.path.exists(path):
-        logger.warning(f"Config file {path} not found. Using defaults/env.")
         return {}
-    with open(path, "r") as f:
-        return yaml.safe_load(f)
+    try:
+        with open(path, "r") as f:
+            return yaml.safe_load(f)
+    except Exception:
+        return {}
 
 yaml_data = load_yaml_config()
 project_cfg = yaml_data.get("project", {})
@@ -37,8 +39,9 @@ class Settings(BaseSettings):
     MAX_LOOPS: int = agents_cfg.get("max_loops", 3)
     CONCURRENCY_LIMIT: int = agents_cfg.get("concurrency_limit", 3)
     
-    # Credentials (Always from env)
-    OPENAI_API_KEY: Optional[str] = None
+    # Credentials
+    GOOGLE_API_KEY: Optional[str] = None
+    HF_TOKEN: Optional[str] = None
     
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

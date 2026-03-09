@@ -3,8 +3,9 @@ import os
 from typing import List
 from src.utils.logger import project_logger as logger
 
-def load_feeds(config_path: str = "config.yaml") -> List[str]:
-    """Loads and flattens RSS feeds from the central YAML config."""
+def load_feeds() -> List[str]:
+    """Loads and flattens RSS feeds from the central YAML config path."""
+    config_path = os.getenv("CONFIG_PATH", "config.yaml")
     if not os.path.exists(config_path):
         logger.error(f"Config file not found at {config_path}")
         return []

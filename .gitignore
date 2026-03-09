@@ -5,20 +5,16 @@ __pycache__/
 
 # Environments
 venv/
+.venv/
 env/
 .env
-.venv
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Data and Logs
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-*.db
-*.log
+# Local Application Data (Persistent in Docker volumes)
+data/
 logs/
+reports/
 
 # Operating System Files
 .DS_Store
@@ -29,7 +25,9 @@ Thumbs.db
 .idea/
 .cursor/
 
-# Build and Dist
+# Build and Distribution
 build/
 dist/
 *.egg-info/
+*.db
+*.log
