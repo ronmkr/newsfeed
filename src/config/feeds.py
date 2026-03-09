@@ -13,12 +13,19 @@ def load_feeds() -> List[str]:
     try:
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
+            # Combine both verified and unverified sections
             feeds_data = config.get("feeds", {})
+            verified_data = config.get("verified_feeds", {})
             
-            # Flatten categories
-            all_feeds = [url for category in feeds_data.values() for url in category]
-            logger.info(f"Loaded {len(all_feeds)} RSS feeds from YAML.")
-            return all_feeds
+            # Extract all URLs from all categories in both sections
+            all_urls = []
+            for data in [feeds_data, verified_data]:
+                if data:
+                    for category_urls in data.values():
+                        all_urls.extend(category_urls)
+            
+            logger.info(f"Loaded {len(all_urls)} RSS feeds (including verified) from YAML.")
+            return all_urls
     except Exception as e:
         logger.error(f"Failed to load feeds from YAML: {str(e)}")
         return []
