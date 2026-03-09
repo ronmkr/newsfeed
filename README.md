@@ -7,55 +7,56 @@ Unbiased India News is a production-grade, agentic AI news aggregation and analy
 ## System Architecture Map
 
 ```mermaid
-flowchart LR
-  subgraph L1["Layer 1: Ingestion Service"]
-    direction TB
-    A1["RSS Feeds"]
-    A2["News Sitemaps"]
-    A3["Homepage Spiders"]
-    B["Ingestion Coordinator"]
-    C["Deduplication & Sanitization"]
-    D["Full-Text Extractor"]
+flowchart TB
+    %% Direction and Layout
+    subgraph INGESTION_LAYER ["1. DATA INGESTION AND NORMALIZATION"]
+        direction LR
+        RSS([RSS Feeds])
+        XML([News Sitemaps])
+        WEB([Homepage Spiders])
+        
+        RSS & XML & WEB --> IC{{"Ingestion Coordinator"}}
+        IC --> DDP["Deduplication Engine"]
+        DDP --> FTE["Full-Text Extraction"]
+    end
 
-    A1 & A2 & A3 --> B
-    B --> C
-    C --> D
-  end
+    subgraph AGENTIC_WORKFLOW ["2. AGENTIC ANALYSIS (LangGraph)"]
+        direction TB
+        SN[["Scout Node"]]
+        SUM[["Summarizer Node"]]
+        AN[["Auditor Node"]]
+        EN[["Editor Node"]]
+        
+        SN ==> SUM ==> AN ==> EN
+        EN -.->|Iterative Cycle| SN
+    end
 
-  subgraph L2["Layer 2: Agentic Workflow (LangGraph)"]
-    direction TB
-    E["Scout Node<br/>(FastEmbed Grouping)"]
-    F["Summarizer Node<br/>(Gemini 1.5 Flash)"]
-    G["Auditor Node<br/>(Gemini 1.5 Pro)"]
-    H["Editor Node<br/>(Blindspot Detection)"]
+    subgraph OUTPUT_LAYER ["3. PERSISTENCE AND REPORTING"]
+        direction LR
+        REPO["Repository Layer"]
+        DB[("SQLite Database")]
+        MD["Markdown Reporter"]
+        
+        REPO ==> DB
+        REPO ==> MD
+    end
 
-    E --> F --> G --> H
-    H -.->|Loop Limit 3| E
-  end
+    %% Inter-layer Flow
+    INGESTION_LAYER ==> AGENTIC_WORKFLOW
+    AGENTIC_WORKFLOW ==> OUTPUT_LAYER
 
-  subgraph L3["Layer 3: Persistence & Reporting"]
-    direction TB
-    I["Repository Layer<br/>(SQLAlchemy)"]
-    J[("SQLite Database")]
-    K["Markdown Reporter"]
+    %% Dark-Mode Friendly Technical Styling
+    classDef layer fill:none,stroke:#8b949e,stroke-width:2px,stroke-dasharray: 5 5,color:#8b949e;
+    classDef ingestion fill:#161b22,stroke:#58a6ff,stroke-width:2px,color:#58a6ff;
+    classDef agentic fill:#161b22,stroke:#bc8cff,stroke-width:2px,color:#bc8cff;
+    classDef persistence fill:#161b22,stroke:#3fb950,stroke-width:2px,color:#3fb950;
 
-    I --> J & K
-  end
-
-  D ==> E
-  H ==> I
-
-  %% Technical Styling
-  classDef layer fill:#f8f9fa,stroke:#202124,stroke-width:2px,font-weight:bold
-  classDef component fill:#ffffff,stroke:#4285f4,stroke-width:2px
-  classDef storage fill:#ffffff,stroke:#34a853,stroke-width:2px
-  classDef ai fill:#ffffff,stroke:#ea4335,stroke-width:2px
-
-  class L1,L2,L3 layer
-  class B,C,D component
-  class E,F,G,H ai
-  class I,J,K storage
+    class INGESTION_LAYER,AGENTIC_WORKFLOW,OUTPUT_LAYER layer;
+    class RSS,XML,WEB,IC,DDP,FTE ingestion;
+    class SN,SUM,AN,EN agentic;
+    class REPO,DB,MD persistence;
 ```
+
 
 ---
 

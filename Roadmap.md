@@ -8,47 +8,51 @@ This document outlines the current production capabilities and future engineerin
 
 ```mermaid
 flowchart TD
-    subgraph Data_Sources ["1. Multi-Channel Discovery"]
+    subgraph STAGE_1 ["1. DISCOVERY"]
         direction LR
-        RSS["RSS Feeds"]
-        XML["Sitemaps"]
-        HTML["Spiders"]
+        RSS([RSS])
+        XML([Sitemap])
+        WEB([Spider])
     end
 
-    subgraph Pre_Processing ["2. Data Normalization"]
-        IC["Ingestion Coordinator"]
+    subgraph STAGE_2 ["2. PRE-PROCESSING"]
+        IC{{"Coordinator"}}
         DDP["Deduplication"]
-        FTE["Full-Text Extraction"]
+        FTE["Extraction"]
     end
 
-    subgraph Agentic_Core ["3. Intelligence Layer (LangGraph)"]
-        SN["Scout Node<br/>(Semantic Clustering)"]
-        SUM["Summarizer<br/>(Gemini Flash)"]
-        AUD["Auditor Node<br/>(Gemini Pro)"]
-        ED["Editor Node<br/>(Final Validation)"]
+    subgraph STAGE_3 ["3. AGENTIC ANALYSIS"]
+        direction TB
+        SN[["Scout"]]
+        SUM[["Summarizer"]]
+        AUD[["Auditor"]]
+        ED[["Editor"]]
     end
 
-    subgraph Persistence ["4. Storage & Reporting"]
-        RPL["Repository Layer"]
+    subgraph STAGE_4 ["4. PERSISTENCE"]
+        direction LR
+        REPO["Repository"]
         SQL[("SQLite DB")]
-        MD["Daily Reports"]
+        MD["Markdown"]
     end
 
-    %% Flow
-    Data_Sources ==> IC
+    %% Flow Connections
+    STAGE_1 ==> IC
     IC --> DDP --> FTE
     FTE ==> SN
     SN --> SUM --> AUD --> ED
-    ED -.->|Refinement Loop| SN
-    ED ==> RPL
-    RPL --> SQL & MD
+    ED -.->|Loop| SN
+    ED ==> REPO
+    REPO --> SQL & MD
 
-    %% Styling
-    classDef layer fill:#f8f9fa,stroke:#202124,stroke-width:2px,font-weight:bold
-    classDef item fill:#ffffff,stroke:#4285f4,stroke-width:2px
+    %% Dark-Mode Friendly Technical Styling
+    classDef stage fill:none,stroke:#8b949e,stroke-width:2px,stroke-dasharray: 5 5,color:#8b949e;
+    classDef item fill:#161b22,stroke:#58a6ff,stroke-width:2px,color:#58a6ff;
+    classDef ai fill:#161b22,stroke:#ea4335,stroke-width:2px,color:#ea4335;
 
-    class Data_Sources,Pre_Processing,Agentic_Core,Persistence layer
-    class RSS,XML,HTML,IC,DDP,FTE,SN,SUM,AUD,ED,RPL,SQL,MD item
+    class STAGE_1,STAGE_2,STAGE_3,STAGE_4 stage;
+    class RSS,XML,WEB,IC,DDP,FTE,REPO,SQL,MD item;
+    class SN,SUM,AUD,ED ai;
 ```
 
 ---
