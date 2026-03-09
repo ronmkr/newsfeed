@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Data and Logs
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+*.db
+*.log
+logs/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+
+# Build and Dist
+build/
+dist/
+*.egg-info/
