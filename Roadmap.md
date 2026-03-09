@@ -83,11 +83,11 @@ flowchart TD
 
 ## Medium Term: Expansion (Q3 2026)
 
-- Regional Sitemap Expansion: Implement sitemap discovery for additional regional languages including Tamil and Telugu.
-- Automated Accuracy Evaluation: Integrate a Judge LLM (GPT-4o) into the evaluation suite to provide automated bias scoring benchmarks.
+- Regional Sitemap Expansion (Issue #4): Implement sitemap discovery for additional regional languages including Tamil and Telugu.
+- Automated Accuracy Evaluation (Issue #5): Integrate a Judge LLM (GPT-4o) into the evaluation suite to provide automated bias scoring benchmarks.
 
 ## Long Term: Platform Growth (2027)
 
-- Vector Story Tracking: Implement a vector database (e.g. ChromaDB) to track story evolution over multiple months.
-- REST API Layer: Develop a FastAPI-based service to expose daily report data to external frontends.
-- Real-time Notifications: Implement an alerting utility for high-priority coverage blindspots.
+- Vector Story Tracking (Issue #6): Implement a vector database (e.g. ChromaDB) to track story evolution over multiple months.
+- REST API Layer (Issue #7): Develop a FastAPI-based service to expose daily report data to external frontends.
+- Real-time Notifications (Issue #8): Implement an alerting utility for high-priority coverage blindspots.
