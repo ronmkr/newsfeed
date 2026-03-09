@@ -31,3 +31,4 @@ dist/
 *.egg-info/
 *.db
 *.log
+prompt.md
