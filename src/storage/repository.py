@@ -1,27 +1,21 @@
 from typing import List
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from src.config.settings import settings
-from src.storage.models import Base, ClusterDB, ArticleDB
+from src.storage.connection import DatabaseConnection
+from src.storage.models import ClusterDB, ArticleDB
 from src.agents.state import NewsCluster
 from src.utils.logger import project_logger as logger
 
-class DatabaseManager:
-    """Handles persistence of analyzed clusters and articles."""
+class ClusterRepository:
+    """Handles the persistence logic for NewsCluster objects."""
     
-    def __init__(self):
-        self.engine = create_engine(settings.DATABASE_URL)
-        Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine)
-        logger.info(f"Database initialized at {settings.DATABASE_URL}")
+    def __init__(self, db_connection: DatabaseConnection):
+        self.db_connection = db_connection
 
     def save_clusters(self, clusters: List[NewsCluster]):
-        """Saves NewsCluster objects (and their articles) to the database."""
+        """Maps and saves NewsCluster objects (and their articles) to the database."""
         if not clusters:
             return
 
-        with self.Session() as session:
+        with self.db_connection.get_session() as session:
             try:
                 for cluster in clusters:
                     # Map Pydantic -> SQLAlchemy
