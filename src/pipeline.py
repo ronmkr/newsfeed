@@ -17,8 +17,10 @@ class UnbiasedIndiaNewsPipeline:
         self.ingestion = IngestionCoordinator()
         
         # 1. Initialize Checkpointer for LangGraph
-        os.makedirs("data/checkpoints", exist_ok=True)
-        conn = sqlite3.connect("data/checkpoints/agent_checkpoints.db", check_same_thread=False)
+        checkpoint_dir = os.path.dirname(settings.CHECKPOINTS_PATH)
+        if checkpoint_dir: os.makedirs(checkpoint_dir, exist_ok=True)
+        
+        conn = sqlite3.connect(settings.CHECKPOINTS_PATH, check_same_thread=False)
         self.checkpointer = SqliteSaver(conn)
         
         # 2. Initialize Agentic App with Checkpointer

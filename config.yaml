@@ -1,0 +1,38 @@
+# Unbiased India News - System Configuration
+
+project:
+  name: "Unbiased India News"
+  debug: false
+  storage:
+    raw_data_path: "data/raw"
+    log_path: "logs/pipeline.log"
+    database_url: "sqlite:///data/newsfeed.db"
+    checkpoints_path: "data/checkpoints/agent_checkpoints.db"
+  models:
+    heavy: "gemini-1.5-pro"
+    light: "gemini-1.5-flash"
+    embedding: "intfloat/multilingual-e5-small"
+  agents:
+    max_loops: 3
+    concurrency_limit: 3
+
+feeds:
+  national_english:
+    - "https://www.thehindu.com/news/national/feeder/default.rss"
+    - "https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms"
+    - "https://indianexpress.com/section/india/feed/"
+    - "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml"
+    - "https://www.indiatoday.in/rss/1206514"
+    - "https://feeds.bbci.co.uk/news/world/asia/india/rss.xml"
+    - "https://www.news18.com/rss/india.xml"
+    - "https://www.moneycontrol.com/rss/latestnews.xml"
+  digital_independent:
+    - "https://swarajyamag.com/feed/"
+    - "https://www.opindia.com/feed/"
+    - "https://www.newslaundry.com/feed"
+    - "https://www.thenewsminute.com/feed"
+  regional_language:
+    - "https://www.sakal.com/rss/national.xml"
+    - "https://www.jansatta.com/national/feed/"
+  aggregators:
+    - "https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en"

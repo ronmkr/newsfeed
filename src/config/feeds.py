@@ -1,24 +1,23 @@
-import json
+import yaml
 import os
 from typing import List
 from src.utils.logger import project_logger as logger
 
-def load_feeds(json_path: str = "data/rss_feeds.json") -> List[str]:
-    """Loads and flattens the list of RSS feeds from JSON."""
-    if not os.path.exists(json_path):
-        logger.error(f"RSS feeds file not found at {json_path}")
+def load_feeds(config_path: str = "config.yaml") -> List[str]:
+    """Loads and flattens RSS feeds from the central YAML config."""
+    if not os.path.exists(config_path):
+        logger.error(f"Config file not found at {config_path}")
         return []
 
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            # Flatten all categories into a single list
-            all_feeds = []
-            for category, urls in data.items():
-                all_feeds.extend(urls)
+        with open(config_path, "r") as f:
+            config = yaml.safe_load(f)
+            feeds_data = config.get("feeds", {})
             
-            logger.info(f"Loaded {len(all_feeds)} RSS feeds across {len(data)} categories.")
+            # Flatten categories
+            all_feeds = [url for category in feeds_data.values() for url in category]
+            logger.info(f"Loaded {len(all_feeds)} RSS feeds from YAML.")
             return all_feeds
     except Exception as e:
-        logger.error(f"Failed to load RSS feeds: {str(e)}")
+        logger.error(f"Failed to load feeds from YAML: {str(e)}")
         return []

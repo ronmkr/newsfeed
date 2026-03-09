@@ -6,6 +6,7 @@ requests==2.31.0
 feedparser==6.0.11
 aiohttp==3.9.3
 aiofiles==23.2.1
+PyYAML==6.0.1
 
 # Agentic Framework & LLM
 langgraph==0.0.26
