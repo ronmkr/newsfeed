@@ -1,39 +1,30 @@
+import asyncio
 import re
-from typing import str, Optional
+from typing import List, Any, Callable, Coroutine, Optional
 import tldextract
+from src.utils.logger import project_logger as logger
 
 def clean_text(text: str) -> str:
-    """
-    Standardizes text by removing extra whitespace, 
-    special characters, and normalizing casing.
-    """
-    if not text:
-        return ""
-    # Remove non-alphanumeric (keep spaces and basic punctuation)
+    """Standardizes text by removing extra whitespace and special characters."""
+    if not text: return ""
     text = re.sub(r'[^\w\s\-\.]', '', text)
-    # Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text.lower()
+    return re.sub(r'\s+', ' ', text).strip().lower()
 
 def get_registered_domain(url: str) -> Optional[str]:
-    """
-    Extracts the registered domain (e.g. google.com) from a URL or domain string.
-    """
-    if not url:
-        return None
-    extracted = tldextract.extract(url)
-    if not extracted.domain or not extracted.suffix:
-        return None
-    return f"{extracted.domain}.{extracted.suffix}".lower()
+    """Extracts registered domain (e.g., indiatimes.com) from a URL."""
+    if not url: return None
+    ext = tldextract.extract(url)
+    return f"{ext.domain}.{ext.suffix}".lower() if ext.domain and ext.suffix else None
 
-def format_timestamp(dt_str: Optional[str] = None) -> str:
-    """Standardizes date strings to ISO format."""
-    from datetime import datetime
-    if not dt_str:
-        return datetime.now().isoformat()
+async def run_parallel(tasks: List[Coroutine]) -> List[Any]:
+    """Uniformly executes a list of coroutines in parallel."""
+    if not tasks: return []
+    return await asyncio.gather(*tasks)
+
+def parse_json_safely(parser_func: Callable, raw_text: str) -> Optional[dict]:
+    """Wrapper for robust parsing with standardized error logging."""
     try:
-        # Basic attempt to parse common RSS date formats if needed
-        # (Placeholder for more complex logic if required)
-        return dt_str
-    except Exception:
-        return datetime.now().isoformat()
+        return parser_func(raw_text)
+    except Exception as e:
+        logger.error(f"Parsing Error: {str(e)}")
+        return None

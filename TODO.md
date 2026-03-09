@@ -1,40 +1,49 @@
 # 📝 Unbiased India News - Development Roadmap
 
-This document tracks the critical refinements needed to move the pipeline from prototype to a production-ready batch process.
+This document tracks the progress of the Unbiased India News agentic pipeline.
 
 ---
 
-## 🔴 High Priority (Immediate Actions)
+## 🔴 High Priority (Final Steps)
 
-- [ ] **Activate LLM Logic:** Uncomment the `llm_light.invoke()` and `llm_heavy.invoke()` calls in `src/agents/nodes/`. 
-- [x] **Robust JSON Parsing:** (Completed) Implement a safe parser to extract and validate JSON from LLM responses in the Auditor and Summarizer nodes.
-- [x] **Markdown Report Generator:** (Completed)
- Create a utility to export the daily findings from the SQLite DB into a beautiful `DAILY_REPORT.md` file for GitHub.
+- [ ] **Activate LLM Logic:** Uncomment the `llm.ainvoke()` calls in `src/agents/nodes/summarizer.py` and `src/agents/nodes/auditor.py`. Currently, these nodes use simulated logic to prevent unintended API costs.
+- [ ] **Real-World Parsing Validation:** Once LLM logic is active, verify that the `RobustJSONParser` correctly handles various edge cases in Gemini's responses.
 
-## 🟡 Medium Priority (Engineering & Reliability)
+## 🟡 Medium Priority (Expansion)
 
-- [x] **LLM Rate Limiting:** (Completed) Implement `asyncio.Semaphore` to limit concurrent AI calls and avoid Gemini 429 rate limit errors.
-- [x] **Content Sanitization:** (Completed) Add a filter to discard junk text (e.g., cookie walls, "Access Denied") from the `full_text` before sending to analysis.
-- [x] **Pre-Clustering Deduping:** (Completed)
-- [x] **Reasoning Trace Storage:** (Completed)
-- [x] **LangGraph Checkpointing:** (Completed)
+- [ ] **Regional Source Deep-Dive:** Expand the `sitemap_urls` in `IngestionCoordinator` to include regional language sitemaps (Hindi, Marathi, etc.) for deeper cross-lingual coverage.
+- [ ] **Judge LLM (GPT-4o) Integration:** Automate the evaluation suite in `tests/evals/runner.py` by integrating a "Judge" call to compare the Auditor's score against human baselines.
 
-## 🟢 Low Priority (Scaling & Polishing)
+## 🟢 Low Priority (UX & Polishing)
 
-- [x] **CI/CD Model Caching:** (Completed)
-- [x] **Modular Helpers:** (Completed) Extracted reusable text cleaning and domain parsing into `src/utils/helpers.py`.
-- [x] **Unit Testing:** (Completed) Added `pytest` suite for core ingestion and helper logic in `tests/unit`.
-- [ ] **Judge LLM (GPT-4o) Integration:** Fully automate the `tests/evals/runner.py` by integrating a "Judge LLM" call to dynamically evaluate the Auditor's accuracy.
-- [ ] **Frontend Dashboard:** Create a simple Streamlit or Next.js dashboard to visualize the daily bias reports, ownership influence, and blindspot alerts.
+- [ ] **Frontend Dashboard:** Create a simple Streamlit or Next.js dashboard to visualize the clusters, bias trends, and "Blindspot" alerts stored in the SQLite database.
+- [ ] **Email/Telegram Alerts:** Add a utility to send the daily `LATEST_REPORT.md` to a Telegram bot or email list.
 
 ---
 
 ## ✅ Completed Foundations
 
-- [x] **Modular Architecture:** Fully decoupled Ingestion, Clustering, Agentic, and Storage modules.
-- [x] **Repository Pattern:** Decoupled database connection from data access logic.
-- [x] **Cross-lingual Support:** Multilingual-E5 embeddings for semantic grouping across 7+ languages.
-- [x] **Robust Source Matching:** Using `tldextract` for domain-level ownership lookups.
-- [x] **GitHub Action:** Automated daily 8 AM IST runs with persistence.
-- [x] **Externalize Source Metadata:** Moved the `SOURCE_KB` from `src/config/sources.py` into `data/source_kb.json` for better maintainability.
-- [x] **Async Ingestion & LLM Calls:** Refactored the `IngestionCoordinator` and LLM nodes to use `asyncio` and `aiohttp` for parallel processing.
+### Ingestion & Data Quality
+
+- [x] **Triple-Track Ingestion:** Concurrent fetching via RSS, Sitemap XML, and Homepage HTML Spiders.
+- [x] **Asynchronous Fetching:** Fully parallelized I/O using `aiohttp` and `asyncio.gather`.
+- [x] **Full Text Extraction:** Integrated `trafilatura` for clutter-free article body extraction.
+- [x] **Content Sanitization:** Automated filtering of cookie walls, error pages, and "junk" text.
+- [x] **Pre-Clustering Deduping:** URL and Title-based deduplication to reduce noise and cost.
+
+### Agentic Intelligence
+
+- [x] **Modular Node Architecture:** Decoupled agents (Scout, Summarizer, Auditor, Editor) into independent, testable classes.
+- [x] **Cross-lingual Clustering:** Multilingual-E5 embeddings for grouping stories across 7+ languages.
+- [x] **LangGraph Checkpointing:** State persistence using `SqliteSaver` to allow resuming after crashes.
+- [x] **LLM Rate Limiting:** Implemented `asyncio.Semaphore` to prevent 429 rate limit errors.
+- [x] **Robust JSON Parsing:** Regex-based extraction of AI responses from raw strings.
+
+### Engineering & Storage
+
+- [x] **Externalized Data:** RSS feeds (`data/rss_feeds.json`) and Ownership KB (`data/source_kb.json`) managed outside of code.
+- [x] **Repository Pattern:** Decoupled database connection from data access logic using SQLAlchemy.
+- [x] **Reasoning Trace Storage:** Persistent storage of AI "Chain of Thought" for transparency.
+- [x] **Markdown Report Generator:** Automated export of daily findings to human-readable reports.
+- [x] **Unit Testing Suite:** `pytest` infrastructure for core helpers and ingestion logic.
+- [x] **GitHub Action:** Automated daily 8 AM IST runs with model caching.

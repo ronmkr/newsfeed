@@ -1,120 +1,77 @@
 import asyncio
 import aiohttp
 import feedparser
-import trafilatura
-from typing import List, Dict, Any, Optional
 from datetime import datetime
+from typing import List, Any, Optional
 
 from src.utils.logger import project_logger as logger
 from src.ingestion.models import RawArticle
-from src.utils.helpers import clean_text, get_registered_domain
-
-class AsyncRSSFetcher:
-    """Specialized asynchronous fetcher for RSS feeds."""
-    
-    def __init__(self, session: aiohttp.ClientSession):
-        self.session = session
-        self.timeout = aiohttp.ClientTimeout(total=15)
-
-    async def fetch(self, feed_url: str) -> Optional[Any]:
-        """Fetch raw feed data asynchronously."""
-        try:
-            logger.debug(f"Fetching RSS: {feed_url}")
-            async with self.session.get(feed_url, timeout=self.timeout) as response:
-                if response.status != 200:
-                    logger.error(f"Failed to fetch {feed_url}: HTTP {response.status}")
-                    return None
-                
-                content = await response.text()
-                feed = feedparser.parse(content)
-                return feed if feed.entries else None
-        except Exception as e:
-            logger.error(f"Error fetching {feed_url}: {str(e)}")
-        return None
-
-class FullTextExtractor:
-    """Extracts and sanitizes main content from news URLs."""
-    
-    def __init__(self, session: aiohttp.ClientSession):
-        self.session = session
-        self.timeout = aiohttp.ClientTimeout(total=20)
-
-    async def extract(self, url: str) -> Optional[str]:
-        """Fetches, extracts, and sanitizes full text."""
-        try:
-            async with self.session.get(url, timeout=self.timeout) as response:
-                if response.status != 200:
-                    return None
-                
-                html = await response.text()
-                text = trafilatura.extract(html)
-                
-                if text and self._is_valid(text):
-                    return text
-                return None
-        except Exception:
-            return None
-
-    def _is_valid(self, text: str) -> bool:
-        """Heuristic check for valid news content."""
-        if len(text) < 300:
-            return False
-        junk_terms = ["javascript is disabled", "enable cookies", "access denied"]
-        return not any(term in text.lower() for term in junk_terms)
+from src.utils.helpers import clean_text, get_registered_domain, run_parallel
+from src.ingestion.discovery import NewsDiscoverySpider
+from src.ingestion.sitemaps import SitemapDiscoveryEngine
+from src.ingestion.fetchers import FullTextExtractor, AsyncRSSFetcher # Assuming extracted
 
 class IngestionCoordinator:
-    """Orchestrates parallel fetching and de-duplication."""
+    """Orchestrates triple-track ingestion using functional patterns."""
     
+    def __init__(self):
+        self.discovery_sites = ["https://theprint.in", "https://thewire.in", "https://scroll.in", "https://www.thequint.com"]
+        self.sitemap_urls = [
+            "https://www.thehindu.com/sitemap/googlenews.xml",
+            "https://indianexpress.com/news-sitemap.xml",
+            "https://thewire.in/sitemap.xml",
+            "https://theprint.in/news-sitemap.xml",
+            "https://www.ndtv.com/sitemaps/india-news.xml"
+        ]
+
     async def fetch_all(self, rss_feeds: List[str]) -> List[RawArticle]:
-        """Main entry point for gathering unique, enriched articles."""
-        all_raw = []
-        
         async with aiohttp.ClientSession() as session:
-            # 1. Parallel RSS Poll
-            fetcher = AsyncRSSFetcher(session)
-            tasks = [fetcher.fetch(url) for url in rss_feeds]
-            results = await asyncio.gather(*tasks)
-            
-            for url, feed in zip(rss_feeds, results):
-                if feed:
-                    domain = get_registered_domain(url) or "unknown"
-                    all_raw.extend(self._parse_entries(feed, domain))
-            
-            # 2. De-duplicate
-            unique = self.deduplicate(all_raw)
-            
-            # 3. Enrich with Full Text (Parallel)
+            # 1. Initialize Engines
+            rss_fetcher = AsyncRSSFetcher(session)
+            sitemap_engine = SitemapDiscoveryEngine(session)
+            spider = NewsDiscoverySpider(session)
             extractor = FullTextExtractor(session)
-            # Batching to 50 for stability
-            await asyncio.gather(*[self._enrich(extractor, a) for a in unique[:50]])
+
+            # 2. Functional Task Mapping
+            logger.info("Gathering news from all tracks...")
+            results = await run_parallel([
+                run_parallel([rss_fetcher.fetch(url) for url in rss_feeds]),
+                run_parallel([sitemap_engine.get_links_from_sitemap(url) for url in self.sitemap_urls]),
+                run_parallel([spider.discover_links(url) for url in self.discovery_sites])
+            ])
             
-        logger.success(f"Ingested {len(unique)} unique articles.")
-        return unique
+            rss_results, sitemap_links, spider_links = results
+
+            # 3. List Comprehensions for Processing
+            all_raw = []
+            # Process RSS results
+            for url, feed in zip(rss_feeds, rss_results):
+                if feed: all_raw.extend(self._map_feed_to_articles(feed, get_registered_domain(url) or "unknown"))
+            
+            # Process Discovered Links (Sitemaps + Spiders)
+            discovered = [link for sublist in (sitemap_links + spider_links) for link in sublist]
+            all_raw.extend([RawArticle(title="Discovered Article", link=l, source=get_registered_domain(l) or "unknown", summary="", published_at=datetime.now().isoformat()) for l in discovered])
+
+            # 4. Deduplicate and Enrich
+            unique = self.deduplicate(all_raw)
+            await run_parallel([self._enrich(extractor, a) for a in unique[:100]])
+            
+        final = [a for a in unique if a.full_text]
+        logger.success(f"Ingestion complete: {len(final)} articles ready.")
+        return final
+
+    def deduplicate(self, articles: List[RawArticle]) -> List[RawArticle]:
+        seen_urls, seen_titles = set(), set()
+        def is_unique(a):
+            url, title = a.link.strip().lower(), clean_text(a.title)
+            if url in seen_urls or title in seen_titles: return False
+            seen_urls.add(url); seen_titles.add(title); return True
+        return [a for a in articles if is_unique(a)]
 
     async def _enrich(self, extractor: FullTextExtractor, article: RawArticle):
         article.full_text = await extractor.extract(article.link)
+        if (not article.title or article.title == "Discovered Article") and article.full_text:
+            article.title = article.full_text.split('\n')[0][:100]
 
-    def deduplicate(self, articles: List[RawArticle]) -> List[RawArticle]:
-        """Removes duplicates using normalized titles and URLs."""
-        seen_urls, seen_titles, unique = set(), set(), []
-        for art in articles:
-            url_key = art.link.strip().lower()
-            title_key = clean_text(art.title)
-            
-            if url_key not in seen_urls and title_key not in seen_titles:
-                unique.append(art)
-                seen_urls.add(url_key)
-                seen_titles.add(title_key)
-        return unique
-
-    def _parse_entries(self, feed: Any, source: str) -> List[RawArticle]:
-        """Maps raw feed entries to models."""
-        return [
-            RawArticle(
-                title=e.get("title", "N/A"),
-                link=e.get("link", "N/A"),
-                source=source,
-                summary=e.get("summary", ""),
-                published_at=e.get("published", datetime.now().isoformat())
-            ) for e in feed.entries
-        ]
+    def _map_feed_to_articles(self, feed: Any, source: str) -> List[RawArticle]:
+        return [RawArticle(title=e.get("title", "N/A"), link=e.get("link", "N/A"), source=source, summary=e.get("summary", ""), published_at=e.get("published", datetime.now().isoformat())) for e in feed.entries]

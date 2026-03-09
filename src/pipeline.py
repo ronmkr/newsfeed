@@ -8,7 +8,7 @@ from src.storage.repository import ClusterRepository
 from src.utils.report_generator import MarkdownReportGenerator
 from src.utils.logger import project_logger as logger
 from src.config.settings import settings
-from src.config.feeds import RSS_FEEDS
+from src.config.feeds import load_feeds
 
 class UnbiasedIndiaNewsPipeline:
     """Central orchestrator for the modular news pipeline."""
@@ -40,7 +40,8 @@ class UnbiasedIndiaNewsPipeline:
         logger.info(f"Starting {settings.PROJECT_NAME} Pipeline...")
 
         # 2. Ingestion
-        raw_articles = await self.ingestion.fetch_all(RSS_FEEDS)
+        feeds = load_feeds()
+        raw_articles = await self.ingestion.fetch_all(feeds)
         if not raw_articles:
             logger.error("No articles found during ingestion. Stopping.")
             return
