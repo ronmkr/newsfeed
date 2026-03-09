@@ -14,6 +14,7 @@ class ClusterDB(Base):
     main_event: Mapped[str] = mapped_column(String)
     summary_3_bullets: Mapped[List[str]] = mapped_column(JSON, default=[])
     overall_bias: Mapped[float] = mapped_column(Float, default=0.0)
+    reasoning_trace: Mapped[str] = mapped_column(String, nullable=True) # Added for transparency
     is_blindspot: Mapped[bool] = mapped_column(Boolean, default=False)
     blindspot_note: Mapped[str] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -30,6 +31,7 @@ class ArticleDB(Base):
     link: Mapped[str] = mapped_column(String)
     source: Mapped[str] = mapped_column(String)
     summary: Mapped[str] = mapped_column(String)
+    full_text: Mapped[str] = mapped_column(String, nullable=True) # Added for deeper analysis
     published_at: Mapped[str] = mapped_column(String)
     bias_score: Mapped[float] = mapped_column(Float, nullable=True)
     ingested_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

@@ -7,6 +7,7 @@ class RawArticle(BaseModel):
     link: str
     source: str
     summary: str
+    full_text: Optional[str] = None # Added for deeper analysis
     published_at: str
     ingested_at: str = Field(default_factory=lambda: datetime.now().isoformat())
 

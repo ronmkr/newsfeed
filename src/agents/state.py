@@ -14,6 +14,7 @@ class Article(BaseModel):
     link: str
     source: str
     summary: str
+    full_text: Optional[str] = None # Added for deeper analysis
     content: Optional[str] = None
     bias_score: Optional[float] = None
     published_at: str
@@ -25,6 +26,7 @@ class NewsCluster(BaseModel):
     articles: List[Article]
     summary_3_bullets: List[str] = Field(default_factory=list)
     overall_bias: float = 0.0
+    reasoning_trace: Optional[str] = None # Added for transparency
     is_blindspot: bool = False
 
 class AgentState(TypedDict):

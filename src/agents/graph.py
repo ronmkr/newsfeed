@@ -1,5 +1,7 @@
+import asyncio
 from typing import Dict, Any
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.sqlite import SqliteSaver # Added for persistence
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.agents.state import AgentState
@@ -24,6 +26,9 @@ class PipelineGraph:
             google_api_key=settings.OPENAI_API_KEY
         )
         
+        # Rate Limiting: Max 3 concurrent LLM calls
+        self.semaphore = asyncio.Semaphore(3)
+        
         # Engine
         self.clustering_engine = ClusteringEngine()
         
@@ -42,8 +47,8 @@ class PipelineGraph:
         
         # Instantiate nodes
         scout = ScoutNode(self.clustering_engine)
-        summarizer = SummarizerNode(self.llm_light)
-        auditor = AuditorNode(self.llm_heavy)
+        summarizer = SummarizerNode(self.llm_light, self.semaphore)
+        auditor = AuditorNode(self.llm_heavy, self.semaphore)
         editor = EditorNode()
 
         # Add Nodes
@@ -61,8 +66,8 @@ class PipelineGraph:
         self.workflow.add_edge("auditor", "editor")
         self.workflow.add_conditional_edges("editor", self._should_continue, {"scout": "scout", END: END})
 
-    def compile(self):
-        return self.workflow.compile()
+    def compile(self, checkpointer=None):
+        return self.workflow.compile(checkpointer=checkpointer)
 
-def create_pipeline():
-    return PipelineGraph().compile()
+def create_pipeline(checkpointer=None):
+    return PipelineGraph().compile(checkpointer=checkpointer)

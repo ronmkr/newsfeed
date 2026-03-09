@@ -24,6 +24,7 @@ class ClusterRepository:
                         main_event=cluster.main_event,
                         summary_3_bullets=cluster.summary_3_bullets,
                         overall_bias=cluster.overall_bias,
+                        reasoning_trace=cluster.reasoning_trace, # Added for transparency
                         is_blindspot=cluster.is_blindspot
                     )
                     
@@ -35,6 +36,7 @@ class ClusterRepository:
                             link=art.link,
                             source=art.source,
                             summary=art.summary,
+                            full_text=art.full_text, # Added for deeper analysis
                             published_at=art.published_at,
                             bias_score=art.bias_score
                         )

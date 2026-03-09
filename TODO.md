@@ -6,28 +6,35 @@ This document tracks the critical refinements needed to move the pipeline from p
 
 ## 🔴 High Priority (Immediate Actions)
 
-- [ ] **Activate LLM Logic:** Uncomment the `llm_light.invoke()` and `llm_heavy.invoke()` calls in `src/agents/graph.py`. Currently, the agents are using fallback/mock logic to avoid API costs during setup.
-- [ ] **Robust Source Matching:** Refine `src/config/sources.py` and `src/agents/graph.py` to use a more flexible domain matching (e.g., using `tldextract`) to ensure the Ownership Knowledge Base correctly identifies sources like `indiatimes.com` vs `timesofindia.com`.
-- [ ] **Environment Validation:** Add a check in `main.py` to verify that `OPENAI_API_KEY` (Gemini Key) is present before starting the run, providing a clear error message if missing.
+- [ ] **Activate LLM Logic:** Uncomment the `llm_light.invoke()` and `llm_heavy.invoke()` calls in `src/agents/nodes/`. 
+- [x] **Robust JSON Parsing:** (Completed) Implement a safe parser to extract and validate JSON from LLM responses in the Auditor and Summarizer nodes.
+- [x] **Markdown Report Generator:** (Completed)
+ Create a utility to export the daily findings from the SQLite DB into a beautiful `DAILY_REPORT.md` file for GitHub.
 
-## 🟡 Medium Priority (Enhancements)
+## 🟡 Medium Priority (Engineering & Reliability)
 
-- [ ] **Full Text Extraction:** Implement a tool like `trafilatura` or `newspaper3k` in the `NewsCollector` to fetch the full article body from the source `link`. Currently, analysis is limited to the short RSS summary/snippet.
-- [ ] **CI/CD Model Caching:** Update `.github/workflows/daily_run.yml` to cache the HuggingFace model directory (`~/.cache/huggingface`). This prevents the 100MB `multilingual-e5` model from being re-downloaded on every 8 AM run.
-- [ ] **Database Migration Strategy:** Re-evaluate the strategy of committing the SQLite `.db` file back to Git. Consider moving to a hosted PostgreSQL (Supabase/Neon) or exporting a daily `report.json` to avoid binary merge conflicts.
+- [x] **LLM Rate Limiting:** (Completed) Implement `asyncio.Semaphore` to limit concurrent AI calls and avoid Gemini 429 rate limit errors.
+- [x] **Content Sanitization:** (Completed) Add a filter to discard junk text (e.g., cookie walls, "Access Denied") from the `full_text` before sending to analysis.
+- [x] **Pre-Clustering Deduping:** (Completed)
+- [x] **Reasoning Trace Storage:** (Completed)
+- [x] **LangGraph Checkpointing:** (Completed)
 
 ## 🟢 Low Priority (Scaling & Polishing)
 
-- [ ] **Regional Language Expansion:** Add more RSS feeds for Hindi, Marathi, Tamil, and Bengali publications to the `RSS_FEEDS` list in `src/config/settings.py` to test the cross-lingual clustering.
-- [ ] **Judge LLM (GPT-4o) Integration:** Fully automate the `tests/evals/runner.py` by integrating a "Judge LLM" call to dynamically evaluate the Auditor's bias score against the gold standard.
-- [ ] **Frontend Dashboard:** Create a simple Streamlit or Next.js dashboard to visualize the clusters, bias trends, and "Blindspot" alerts stored in the database.
+- [x] **CI/CD Model Caching:** (Completed)
+- [x] **Modular Helpers:** (Completed) Extracted reusable text cleaning and domain parsing into `src/utils/helpers.py`.
+- [x] **Unit Testing:** (Completed) Added `pytest` suite for core ingestion and helper logic in `tests/unit`.
+- [ ] **Judge LLM (GPT-4o) Integration:** Fully automate the `tests/evals/runner.py` by integrating a "Judge LLM" call to dynamically evaluate the Auditor's accuracy.
+- [ ] **Frontend Dashboard:** Create a simple Streamlit or Next.js dashboard to visualize the daily bias reports, ownership influence, and blindspot alerts.
 
 ---
 
 ## ✅ Completed Foundations
 
-- [x] Multi-agent StateGraph architecture (Scout, Summarizer, Auditor, Editor).
-- [x] Cross-lingual embedding comparison (Multilingual-E5).
-- [x] Source Knowledge Base with Indian Media ownership data.
-- [x] Structured logging and relational database storage.
-- [x] GitHub Action for automated daily 8 AM IST runs.
+- [x] **Modular Architecture:** Fully decoupled Ingestion, Clustering, Agentic, and Storage modules.
+- [x] **Repository Pattern:** Decoupled database connection from data access logic.
+- [x] **Cross-lingual Support:** Multilingual-E5 embeddings for semantic grouping across 7+ languages.
+- [x] **Robust Source Matching:** Using `tldextract` for domain-level ownership lookups.
+- [x] **GitHub Action:** Automated daily 8 AM IST runs with persistence.
+- [x] **Externalize Source Metadata:** Moved the `SOURCE_KB` from `src/config/sources.py` into `data/source_kb.json` for better maintainability.
+- [x] **Async Ingestion & LLM Calls:** Refactored the `IngestionCoordinator` and LLM nodes to use `asyncio` and `aiohttp` for parallel processing.
