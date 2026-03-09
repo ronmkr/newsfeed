@@ -4,38 +4,44 @@ from typing import Dict, Any, Optional
 from src.utils.logger import project_logger as logger
 
 class RobustJSONParser:
-    """Utility to reliably extract and parse JSON from LLM responses."""
+    """Provides resilient JSON extraction from unstructured AI responses."""
 
     @staticmethod
     def extract_json(raw_text: str) -> Optional[Dict[str, Any]]:
         """
-        Attempts to find a JSON block in the text and parse it.
-        Handles markdown blocks (```json ... ```) and raw strings.
+        Extracts and parses JSON from text, handling markdown blocks and loose text.
+        
+        Args:
+            raw_text: The raw string response from an LLM.
+        Returns:
+            A dictionary if extraction is successful, else None.
         """
-        if not raw_text:
+        if not raw_text or not isinstance(raw_text, str):
             return None
 
-        # 1. Try to find content within markdown code blocks
-        json_match = re.search(r"```json\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
-        if json_match:
-            try:
-                return json.loads(json_match.group(1))
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse JSON inside markdown block.")
+        # Clean potential whitespace/newlines
+        text = raw_text.strip()
 
-        # 2. Try to find the first '{' and last '}'
-        start_idx = raw_text.find('{')
-        end_idx = raw_text.rfind('}')
-        if start_idx != -1 and end_idx != -1:
-            try:
-                potential_json = raw_text[start_idx : end_idx + 1]
-                return json.loads(potential_json)
-            except json.JSONDecodeError:
-                logger.warning("Failed to parse extracted curly-brace block.")
+        # Pattern 1: Markdown code blocks
+        md_match = re.search(r"```json\s*(\{.*?\})\s*```", text, re.DOTALL)
+        if md_match:
+            result = RobustJSONParser._parse_string(md_match.group(1))
+            if result: return result
 
-        # 3. Last ditch: try raw parsing
+        # Pattern 2: First '{' to last '}'
+        brace_match = re.search(r"(\{.*\})", text, re.DOTALL)
+        if brace_match:
+            result = RobustJSONParser._parse_string(brace_match.group(1))
+            if result: return result
+
+        # Fallback: Direct parse
+        return RobustJSONParser._parse_string(text)
+
+    @staticmethod
+    def _parse_string(json_str: str) -> Optional[Dict[str, Any]]:
+        """Internal helper for json.loads with logging."""
         try:
-            return json.loads(raw_text)
-        except json.JSONDecodeError:
-            logger.error(f"Could not extract valid JSON from text: {raw_text[:100]}...")
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.debug(f"JSON Decode Error: {e} | Text fragment: {json_str[:50]}...")
             return None
