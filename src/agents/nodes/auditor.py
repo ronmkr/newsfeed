@@ -36,8 +36,11 @@ class AuditorNode(BaseClusterAgent):
             data = RobustJSONParser.extract_json(response.content)
             
             if data:
-                cluster.overall_bias = float(data.get("bias_score", 0.0))
-                cluster.reasoning_trace = data.get("ownership_influence_note", "")
+                try:
+                    cluster.overall_bias = float(data.get("bias_score", 0.0))
+                except (ValueError, TypeError):
+                    cluster.overall_bias = 0.0
+                cluster.reasoning_trace = str(data.get("ownership_influence_note", ""))
             
         except Exception as e:
             logger.error(f"Audit AI Failure: {str(e)}")

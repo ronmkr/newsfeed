@@ -54,10 +54,17 @@ class IngestionCoordinator:
 
             # 4. Deduplicate and Enrich
             unique = self.deduplicate(all_raw)
-            await run_parallel([self._enrich(extractor, a) for a in unique[:100]])
+            # Use a semaphore to limit concurrent connections during enrichment
+            sem = asyncio.Semaphore(15)
+            
+            async def bounded_enrich(article):
+                async with sem:
+                    await self._enrich(extractor, article)
+                    
+            await run_parallel([bounded_enrich(a) for a in unique])
             
         final = [a for a in unique if a.full_text]
-        logger.success(f"Ingestion complete: {len(final)} articles ready.")
+        logger.success(f"Ingestion complete: {len(final)} articles ready out of {len(unique)} unique URLs.")
         return final
 
     def deduplicate(self, articles: List[RawArticle]) -> List[RawArticle]:

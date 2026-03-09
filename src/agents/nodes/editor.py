@@ -10,8 +10,10 @@ class EditorNode:
         logger.info("Editor-in-Chief Node: Finalizing Quality Control...")
         
         clusters = state.get("clusters", [])
-        # Functional update of clusters
-        [self._detect_blindspot(c) for c in clusters]
+        
+        # Iterate and update clusters
+        for c in clusters:
+            self._detect_blindspot(c)
             
         next_step = END if state.get("loop_count", 0) >= 3 else END # Terminate for now
         if state.get("loop_count", 0) >= 3:

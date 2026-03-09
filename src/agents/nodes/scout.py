@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict, Any
 from langgraph.graph import END
 from src.agents.state import AgentState
@@ -31,8 +32,8 @@ class ScoutNode:
             logger.warning("Scout Node: No raw news found to process.")
             return {"next_step": END, "errors": ["No data found"], "loop_count": loop_count}
         
-        # 1. Semantic Clustering (CPU-bound call)
-        clusters = self.clustering_engine.group_articles(raw_data)
+        # 1. Semantic Clustering (CPU-bound call offloaded to thread)
+        clusters = await asyncio.to_thread(self.clustering_engine.group_articles, raw_data)
         
         # 2. Source Enrichment (Metadata lookup)
         for cluster in clusters:
