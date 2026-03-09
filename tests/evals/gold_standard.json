@@ -1,0 +1,40 @@
+[
+    {
+        "test_id": "eval_001",
+        "description": "Economic Policy Coverage (Pro-Business Framing)",
+        "human_bias_score": 1.0,
+        "articles": [
+            {
+                "title": "New Industrial Policy to Boost Manufacturing by 20%",
+                "source": "timesofindia.indiatimes.com",
+                "summary": "The government's new policy is a landmark move that will create millions of jobs and attract global investment.",
+                "published_at": "2024-03-01T10:00:00Z"
+            },
+            {
+                "title": "Corporate India Welcomes New Manufacturing Incentives",
+                "source": "republicworld.com",
+                "summary": "Industry leaders hail the strategic vision of the PM in transforming India into a global manufacturing hub.",
+                "published_at": "2024-03-01T11:00:00Z"
+            }
+        ]
+    },
+    {
+        "test_id": "eval_002",
+        "description": "Protest Coverage (Critical Framing)",
+        "human_bias_score": -1.5,
+        "articles": [
+            {
+                "title": "New Policy Facing Massive Backlash from Farmers",
+                "source": "thewire.in",
+                "summary": "Experts warn that the new industrial policy ignores the rights of small-scale farmers and will lead to displacement.",
+                "published_at": "2024-03-02T09:00:00Z"
+            },
+            {
+                "title": "Protests Erupt Across Rural Districts Over Land Acquisition",
+                "source": "thehindu.com",
+                "summary": "The government's failure to consult stakeholders has led to widespread anger and protests in agrarian heartlands.",
+                "published_at": "2024-03-02T10:30:00Z"
+            }
+        ]
+    }
+]

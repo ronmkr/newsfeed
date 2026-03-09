@@ -1,0 +1,51 @@
+name: Unbiased India News - Daily Pipeline
+
+on:
+  schedule:
+    # 02:30 UTC is 08:00 AM IST
+    - cron: '30 2 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  daily-run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # To push the DB back
+    
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Cache HuggingFace Models
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: ${{ runner.os }}-hf-models-${{ hashFiles('src/config/settings.py') }}
+          restore-keys: |
+            ${{ runner.os }}-hf-models-
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Unbiased India News Pipeline
+        env:
+          # Use your Google Gemini API Key from GitHub Secrets
+          OPENAI_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: python main.py
+
+      - name: Commit and Push Results
+        # Keep the database persistent in the repo
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/newsfeed.db logs/pipeline.log
+          git commit -m "Update daily report: $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push
