@@ -63,8 +63,20 @@ class UnbiasedIndiaNewsPipeline:
             if final_state.get("clusters"):
                 self.repository.save_clusters(final_state["clusters"])
                 self.report_generator.generate_daily_report()
-                logger.success(f"Pipeline complete. {len(final_state['clusters'])} clusters saved.")
+
+                # Final Analytics Log
+                total_articles = len(raw_data)
+                total_clusters = len(final_state["clusters"])
+                blindspots = sum(1 for c in final_state["clusters"] if c.is_blindspot)
+
+                logger.success("--------------------------------------------------")
+                logger.success(f"PIPELINE RUN COMPLETE")
+                logger.success(f"Total Articles Processed: {total_articles}")
+                logger.success(f"Story Clusters Formed:    {total_clusters}")
+                logger.success(f"Blindspots Identified:    {blindspots}")
+                logger.success("--------------------------------------------------")
             else:
+
                 logger.warning("No clusters generated to save.")
 
 if __name__ == "__main__":

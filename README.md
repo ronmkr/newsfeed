@@ -91,4 +91,13 @@ python3 main.py
 - Bias Evaluations: `python3 -m tests.evals.runner`
 
 ---
+
+## Legal and Ethical Data Use
+Unbiased India News is an automated media analysis tool designed for research and transparency. 
+- All news content is accessed via publicly available RSS feeds and Sitemaps.
+- The system extracts and analyzes content under "Fair Use" for the purpose of criticism, comment, and news reporting.
+- Full credit and direct links are provided for every article to the original publisher.
+- This platform does not store full article bodies permanently beyond the immediate analysis cycle required for generating bias reports.
+
+---
 *Unbiased India News is architected for transparency, scalability, and technical purity.*
