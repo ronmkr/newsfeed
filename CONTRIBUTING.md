@@ -28,4 +28,4 @@ To maintain the quality and consistency of the project, please adhere to the fol
 * Include logs from `logs/pipeline.log` if relevant.
 
 ---
-*By contributing, you agree that your contributions will be licensed under its MIT License.*
+*By contributing, you agree that your contributions will be licensed under the Apache License 2.0.*
