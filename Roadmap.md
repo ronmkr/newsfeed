@@ -59,15 +59,20 @@ This document outlines the current production capabilities and future engineerin
 ## Medium Term: Expansion (Q3 2026)
 
 - Regional Sitemap Expansion (Issue #4): Implement sitemap discovery for additional regional languages including Tamil and Telugu.
-- Automated Accuracy Evaluation (Issue #5): Integrate a Judge LLM (GPT-4o) into the evaluation suite to provide automated bias scoring benchmarks.
-- Semantic Deduplication (Issue #9): Implement vector-based pre-clustering deduplication to catch near-duplicate headlines before processing.
+- Automated Accuracy Evaluation (Issue #5): Integrate a Judge LLM (GPT-4o) into the evaluation suite.
+- Semantic Deduplication (Issue #9): Implement vector-based pre-clustering deduplication to catch near-duplicate headlines.
 - Database Migrations (Issue #10): Integrate Alembic to manage SQLAlchemy schema changes without data loss.
+- Ideological Mirror Agent (Issue #17): Add specialized agent to stress-test analysis via counter-narrative reasoning.
+- Multi-Format Reporting (Issue #18): Support JSON snapshots and PDF summary exports.
 
 ## Long Term: Platform Growth (2027)
 
-- Vector Story Tracking (Issue #6): Implement a vector database (e.g. ChromaDB) to track story evolution over multiple months.
+- Vector Story Tracking (Issue #6): Implement a vector database (e.g. ChromaDB) to track story evolution.
 - REST API Layer (Issue #7): Develop a FastAPI-based service to expose daily report data to external frontends.
 - Real-time Notifications (Issue #8): Implement an alerting utility for high-priority coverage blindspots.
-- Workflow Observability (Issue #11): Integrate LangSmith for deep visual debugging of agentic "Chain of Thought" and cost tracking.
-- Historical Bias Analytics (Issue #12): Implement a specialized node to compare current bias scores against publication historical averages.
-- Code Quality Gates (Issue #13): Integrate Ruff and Mypy into CI/CD for strict linting and static type enforcement.
+- Workflow Observability (Issue #11): Integrate LangSmith for deep visual debugging of LangGraph flows.
+- Historical Bias Analytics (Issue #12): Implement specialized node to compare bias against publication historical averages.
+- Code Quality Gates (Issue #13): Integrate Ruff and Mypy into CI/CD for strict linting.
+- Historical Narrative Clustering (Issue #19): Link clusters over long-term timelines to track narrative escalation.
+- Interactive Bias Slider (Issue #20): Build a Streamlit UI for dynamic filtering and polarization visualization.
+- Social Media Thread Generator (Issue #21): Automated export of daily findings to Twitter/X and LinkedIn formats.
