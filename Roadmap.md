@@ -63,7 +63,8 @@ This document outlines the current production capabilities and future engineerin
 - Semantic Deduplication (Issue #9): Implement vector-based pre-clustering deduplication to catch near-duplicate headlines.
 - Database Migrations (Issue #10): Integrate Alembic to manage SQLAlchemy schema changes without data loss.
 - Ideological Mirror Agent (Issue #17): Add specialized agent to stress-test analysis via counter-narrative reasoning.
-- Multi-Format Reporting (Issue #18): Support JSON snapshots and PDF summary exports.
+- Fact-Checking & Credibility (Issue #22): Integrate with Fact-Checking APIs to cross-reference claims and weight source credibility.
+- Hallucination Detection (Issue #23): Implement automated self-reflection grounding checks to ensure summaries strictly adhere to extracted facts.
 
 ## Long Term: Platform Growth (2027)
 
@@ -71,8 +72,5 @@ This document outlines the current production capabilities and future engineerin
 - REST API Layer (Issue #7): Develop a FastAPI-based service to expose daily report data to external frontends.
 - Real-time Notifications (Issue #8): Implement an alerting utility for high-priority coverage blindspots.
 - Workflow Observability (Issue #11): Integrate LangSmith for deep visual debugging of LangGraph flows.
-- Historical Bias Analytics (Issue #12): Implement specialized node to compare bias against publication historical averages.
-- Code Quality Gates (Issue #13): Integrate Ruff and Mypy into CI/CD for strict linting.
-- Historical Narrative Clustering (Issue #19): Link clusters over long-term timelines to track narrative escalation.
-- Interactive Bias Slider (Issue #20): Build a Streamlit UI for dynamic filtering and polarization visualization.
-- Social Media Thread Generator (Issue #21): Automated export of daily findings to Twitter/X and LinkedIn formats.
+- Ethical Scraping Compliance (Issue #24): (Completed) Integrated robots.txt parser and per-domain rate limiting logic.
+- Human-in-the-Loop Workflow (Issue #25): Implement an interrupt-and-review system for high-polarization stories.
