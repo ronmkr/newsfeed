@@ -4,18 +4,18 @@ from bs4 import BeautifulSoup
 from typing import List, Set
 from src.utils.helpers import get_registered_domain
 from src.utils.logger import project_logger as logger
+from src.ingestion.fetchers import BOT_HEADERS
 
 class NewsDiscoverySpider:
     """Discovers news links directly from publication homepages."""
     
     def __init__(self, session: aiohttp.ClientSession):
         self.session = session
-        self.headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"}
 
     async def discover_links(self, homepage_url: str) -> List[str]:
         """Scans a homepage for potential news article links."""
         try:
-            async with self.session.get(homepage_url, headers=self.headers, timeout=15) as response:
+            async with self.session.get(homepage_url, headers=BOT_HEADERS, timeout=15) as response:
                 if response.status != 200:
                     return []
                 
