@@ -24,7 +24,7 @@ SQLAlchemy>=2.0.28
 fastembed>=0.2.0
 
 # Scraping & Extraction
-beautifulsoup4>=4.12.3
+beautifulsoup4>=4.14.3
 lxml>=5.1.0
 tldextract>=5.1.2
 trafilatura>=1.8.0
